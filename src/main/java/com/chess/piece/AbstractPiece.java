@@ -2,13 +2,13 @@ package com.chess.piece;
 
 import com.chess.squares.Square;
 
-public abstract class AbstractPiece {
+public abstract class AbstractPiece implements Movable {
     protected String name;
     protected PieceColor pieceColor;
     protected Square currentSquare;
 
     public AbstractPiece(PieceColor pieceColor) {
-        this.pieceColor=pieceColor;
+        this.pieceColor = pieceColor;
     }
 
     public String getName() {

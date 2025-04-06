@@ -3,17 +3,23 @@ package com.chess.board;
 import com.chess.common.File;
 import com.chess.common.Location;
 import com.chess.piece.AbstractPiece;
+import com.chess.piece.PieceColor;
 import com.chess.piece.PieceFactory;
 import com.chess.squares.Square;
 import com.chess.squares.SquareColor;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Board {
     private static final Integer BOARD_LENGTH = 8;
     private final Map<Location, Square> locationSquareMap;
     Square[][] boardSquares = new Square[BOARD_LENGTH][BOARD_LENGTH];
+
+    private final List<AbstractPiece> lightPieces = new ArrayList<>();
+    private final List<AbstractPiece> darkPieces = new ArrayList<>();
 
 
     public Board() {
@@ -32,7 +38,13 @@ public class Board {
                     newSquare.setCurrentPiece(piece);
                     newSquare.setOccupied(true);
                     piece.setCurrentSquare(newSquare);
+                    if (piece.getPieceColor().equals(PieceColor.DARK)) {
+                        darkPieces.add(piece);
+                    } else {
+                        lightPieces.add(piece);
+                    }
                 }
+
 
                 locationSquareMap.put(newSquare.getLocation(), newSquare);
                 boardSquares[i][column] = newSquare;
@@ -45,6 +57,14 @@ public class Board {
 
     public Map<Location, Square> getLocationSquareMap() {
         return locationSquareMap;
+    }
+
+    public List<AbstractPiece> getLightPieces() {
+        return this.lightPieces;
+    }
+
+    public List<AbstractPiece> getDarkPieces() {
+        return this.darkPieces;
     }
 
     public void printBoard() {
