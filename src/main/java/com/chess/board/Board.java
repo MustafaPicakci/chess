@@ -3,6 +3,7 @@ package com.chess.board;
 import com.chess.common.File;
 import com.chess.common.Location;
 import com.chess.piece.AbstractPiece;
+import com.chess.piece.PieceFactory;
 import com.chess.squares.Square;
 import com.chess.squares.SquareColor;
 
@@ -18,12 +19,21 @@ public class Board {
     public Board() {
         locationSquareMap = new HashMap<>();
 
+        Map<Location, AbstractPiece> pieces = PieceFactory.getPieces();
+
         for (int i = 0; i < boardSquares.length; i++) {
             int column = 0;
             SquareColor currentColor = (i % 2 == 0) ? SquareColor.LIGHT : SquareColor.DARK;
 
             for (File file : File.values()) {
                 Square newSquare = new Square(currentColor, new Location(file, BOARD_LENGTH - i));
+                if (pieces.containsKey(newSquare.getLocation())) {
+                    AbstractPiece piece = pieces.get(newSquare.getLocation());
+                    newSquare.setCurrentPiece(piece);
+                    newSquare.setOccupied(true);
+                    piece.setCurrentSquare(newSquare);
+                }
+
                 locationSquareMap.put(newSquare.getLocation(), newSquare);
                 boardSquares[i][column] = newSquare;
                 currentColor = (currentColor == SquareColor.DARK) ? SquareColor.LIGHT : SquareColor.DARK;
