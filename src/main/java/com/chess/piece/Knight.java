@@ -37,7 +37,9 @@ public class Knight extends AbstractPiece implements Movable {
 
     @Override
     public void makeMove(Square square) {
-        System.out.println(this.getName() + "-> makeMove()");
+        Square current = this.getCurrentSquare();
+        this.setCurrentSquare(square);
+        current.reset();
     }
 
     private void getMoves(List<Location> moveCandiates, Map<Location, Square> squareMap, Location current, int rankOffset, int fileOffset) {

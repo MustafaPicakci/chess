@@ -21,10 +21,10 @@ public class Bishop extends AbstractPiece implements Movable {
         Map<Location, Square> squareMap = board.getLocationSquareMap();
         Location current = this.getCurrentSquare().getLocation();
 
-        getMoves(moveCandidates, squareMap, current,1, 1);
-        getMoves(moveCandidates, squareMap,current, 1, -1);
-        getMoves(moveCandidates, squareMap,current, -1, 1);
-        getMoves(moveCandidates, squareMap,current, -1, -1);
+        getMoves(moveCandidates, squareMap, current, 1, 1);
+        getMoves(moveCandidates, squareMap, current, 1, -1);
+        getMoves(moveCandidates, squareMap, current, -1, 1);
+        getMoves(moveCandidates, squareMap, current, -1, -1);
 
 
         return moveCandidates;
@@ -37,7 +37,10 @@ public class Bishop extends AbstractPiece implements Movable {
 
     @Override
     public void makeMove(Square square) {
-        System.out.println(this.getName() + "-> makeMove()");
+        Square current = this.getCurrentSquare();
+        this.setCurrentSquare(square);
+        current.reset();
+
     }
 
     private void getMoves(List<Location> moveCandiates, Map<Location, Square> squareMap, Location current, int rankOffset, int fileOffset) {
