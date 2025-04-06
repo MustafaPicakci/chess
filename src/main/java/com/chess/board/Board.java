@@ -2,6 +2,7 @@ package com.chess.board;
 
 import com.chess.common.File;
 import com.chess.common.Location;
+import com.chess.piece.AbstractPiece;
 import com.chess.squares.Square;
 import com.chess.squares.SquareColor;
 
@@ -16,7 +17,6 @@ public class Board {
 
     public Board() {
         locationSquareMap = new HashMap<>();
-
 
         for (int i = 0; i < boardSquares.length; i++) {
             int column = 0;
@@ -38,11 +38,23 @@ public class Board {
     }
 
     public void printBoard() {
-        for (Square[] row : boardSquares) {
-            for (Square square : row) {
-                System.out.println(square);
+        for (int i = 0; i < boardSquares.length; i++) {
+            System.out.print(BOARD_LENGTH - i + " ");
+            for (int j = 0; j < boardSquares[i].length; j++) {
+                if (boardSquares[i][j].isOccupied()) {
+                    AbstractPiece piece = boardSquares[i][j].getCurrentPiece();
+                    System.out.print(piece.getName().charAt(0) + " ");
+                } else {
+                    System.out.print("- ");
+                }
             }
             System.out.println();
         }
+        System.out.print("  ");
+        for (File file : File.values()) {
+            System.out.print(file.name() + " ");
+        }
+        System.out.println();
+
     }
 }

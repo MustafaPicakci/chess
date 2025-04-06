@@ -6,11 +6,9 @@ import com.chess.piece.*;
 public class Game {
     public static void main(String[] args) {
 
+        Board board = new Board();
+        board.printBoard();
 
-        PieceColor pieceColor = PieceColor.DARK;
-        Movable pawn=new Pawn(pieceColor);
-
-        Game.printPiece(pawn);
 
     }
 
