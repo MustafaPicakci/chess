@@ -5,6 +5,7 @@ import com.chess.common.Location;
 import com.chess.common.LocationFactory;
 import com.chess.squares.Square;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -17,43 +18,41 @@ public class Knight extends AbstractPiece implements Movable {
 
     @Override
     public List<Location> getValidMoves(Board board) {
-        List<Location> moveCandidates = Collections.EMPTY_LIST;
+        return getValidMoves(board, this.getCurrentSquare());
+    }
+
+    @Override
+    public List<Location> getValidMoves(Board board, Square square) {
+        if (board == null || square == null) {
+            return Collections.emptyList();
+        }
+
+        int[][] offsets = {
+                {1, 2}, {2, 1}, {2, -1}, {1, -2},
+                {-1, -2}, {-2, -1}, {-2, 1}, {-1, 2}
+        };
+
         Map<Location, Square> squareMap = board.getLocationSquareMap();
-        Location current = this.getCurrentSquare().getLocation();
+        Location current = square.getLocation();
+        List<Location> moveCandidates = new ArrayList<>();
 
-        getMoves(moveCandidates, squareMap, current, 2, 1);
-        getMoves(moveCandidates, squareMap, current, 2, -1);
-        getMoves(moveCandidates, squareMap, current, -2, 1);
-        getMoves(moveCandidates, squareMap, current, -2, -1);
+        for (int[] offset : offsets) {
+            Location next = LocationFactory.build(current, offset[0], offset[1]);
+            if (next == null) {
+                continue;
+            }
 
+            Square nextSquare = squareMap.get(next);
+            if (!nextSquare.isOccupied() || nextSquare.getCurrentPiece().getPieceColor() != this.pieceColor) {
+                moveCandidates.add(next);
+            }
+        }
 
         return moveCandidates;
     }
 
     @Override
-    public List<Location> getValidMoves(Board board, Square square) {
-        return null;
-    }
-
-    @Override
     public void makeMove(Square square) {
-        Square current = this.getCurrentSquare();
-        this.setCurrentSquare(square);
-        current.reset();
-    }
-
-    private void getMoves(List<Location> moveCandiates, Map<Location, Square> squareMap, Location current, int rankOffset, int fileOffset) {
-        Location next = LocationFactory.build(current, fileOffset, rankOffset);
-        while (squareMap.containsKey(next)) {
-            if (squareMap.get(next).isOccupied()) {
-                if (squareMap.get(next).getCurrentPiece().getPieceColor().equals(this.pieceColor)) {
-                    break;
-                }
-                moveCandiates.add(next);
-                break;
-            }
-            moveCandiates.add(next);
-
-        }
+        moveToSquare(square);
     }
 }
