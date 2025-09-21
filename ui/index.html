@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chess Playground</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+const { useState, useEffect } = React;
+const files = ['a','b','c','d','e','f','g','h'];
+const ranks = [8,7,6,5,4,3,2,1];
+
+function pieceSymbol(piece) {
+    if (!piece) return '';
+    const whiteSymbols = {
+        Pawn: '♙',
+        Rook: '♖',
+        Knight: '♘',
+        Bishop: '♗',
+        Queen: '♕',
+        King: '♔'
+    };
+    const blackSymbols = {
+        Pawn: '♟',
+        Rook: '♜',
+        Knight: '♞',
+        Bishop: '♝',
+        Queen: '♛',
+        King: '♚'
+    };
+    const map = piece.color === 'LIGHT' ? whiteSymbols : blackSymbols;
+    return map[piece.name] || piece.name.charAt(0);
+}
+
+function Square(props) {
+    const classes = ['square'];
+    if (props.isDark) classes.push('dark');
+    if (props.isSelected) classes.push('selected');
+    if (props.canMove) classes.push('candidate');
+
+    const children = [];
+    if (props.piece) {
+        children.push(React.createElement(
+            'div',
+            {
+                className: 'piece ' + (props.piece.color === 'LIGHT' ? 'light' : 'dark'),
+                title: props.piece.color + ' ' + props.piece.name,
+                key: 'piece'
+            },
+            pieceSymbol(props.piece)
+        ));
+    }
+    children.push(React.createElement('span', { className: 'coord', key: 'coord' }, props.file + props.rank));
+
+    return React.createElement('div', {
+        className: classes.join(' '),
+        onClick: props.onClick
+    }, children);
+}
+
+function App() {
+    const [state, setState] = useState({ pieces: {}, currentTurn: 'LIGHT' });
+    const [selected, setSelected] = useState(null);
+    const [message, setMessage] = useState('');
+    const [validMoves, setValidMoves] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        fetchState();
+    }, []);
+
+    async function fetchState() {
+        try {
+            const response = await fetch('/api/state');
+            const json = await response.json();
+            setState(json);
+            setSelected(null);
+            setValidMoves([]);
+            setMessage('Tahta yüklendi.');
+        } catch (err) {
+            setMessage('Sunucuya ulaşılamadı. ChessServer çalışıyor mu?');
+        }
+    }
+
+    function handleSquareClick(squareKey) {
+        const piece = state.pieces[squareKey];
+        if (!selected) {
+            if (!piece) {
+                setMessage('Önce hamle yapmak istediğiniz taşı seçin.');
+                return;
+            }
+            if (piece.color !== state.currentTurn) {
+                setMessage('Sıra ' + (state.currentTurn === 'LIGHT' ? 'beyaz' : 'siyah') + ' taşlarında.');
+                return;
+            }
+            setSelected(squareKey);
+            setValidMoves([]);
+            setMessage(squareKey.toUpperCase() + ' seçildi. Hedef kareye tıklayın.');
+        } else if (selected === squareKey) {
+            setSelected(null);
+            setValidMoves([]);
+            setMessage('Seçim sıfırlandı.');
+        } else {
+            submitMove(selected, squareKey);
+        }
+    }
+
+    async function submitMove(from, to) {
+        setLoading(true);
+        try {
+            const response = await fetch('/api/move', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ from, to })
+            });
+            const json = await response.json();
+            if (json.status === 'ok') {
+                setState(json.state);
+                setMessage('Hamle: ' + from.toUpperCase() + '-' + to.toUpperCase() + (json.move.promotion ? ', Terfi: ' + json.move.promotion : ''));
+            } else {
+                setMessage(json.message || 'Hamle reddedildi');
+                if (json.state) {
+                    setState(json.state);
+                }
+            }
+        } catch (err) {
+            setMessage('Hamle gönderilemedi: ' + err.message);
+        } finally {
+            setSelected(null);
+            setValidMoves([]);
+            setLoading(false);
+        }
+    }
+
+    const boardRows = ranks.map((rank, rowIdx) => {
+        const squares = files.map((file, colIdx) => {
+            const key = file + rank;
+            const isDark = (rowIdx + colIdx) % 2 === 1;
+            const isSelected = selected === key;
+            const canMove = validMoves.indexOf(key) !== -1;
+            return React.createElement(Square, {
+                key,
+                file,
+                rank,
+                piece: state.pieces[key],
+                isDark,
+                isSelected,
+                canMove,
+                onClick: () => handleSquareClick(key)
+            });
+        });
+        return React.createElement('div', { className: 'rank', key: rank }, squares);
+    });
+
+    const header = React.createElement('header', null, [
+        React.createElement('h1', { key: 'title' }, 'Chess Playground'),
+        React.createElement('p', { key: 'turn' }, ['Aktif oyuncu: ', React.createElement('strong', { key: 'strong' }, state.currentTurn === 'LIGHT' ? 'Beyaz' : 'Siyah')]),
+        React.createElement('button', { key: 'button', onClick: fetchState, disabled: loading }, 'Tahtayı Sıfırla')
+    ]);
+
+    const board = React.createElement('div', { className: 'board' }, boardRows);
+
+    const sidebar = React.createElement('aside', null, [
+        React.createElement('h2', { key: 'title' }, 'Hamle Mesajı'),
+        React.createElement('p', { className: 'message', key: 'message' }, message || 'Bir taş seçip deneme yapın.'),
+        React.createElement('p', { className: 'hint', key: 'hint' }, 'Taş seçmek için kareye tıklayın, ardından hedef kareye tıklayarak hamleyi gönderin.')
+    ]);
+
+    const main = React.createElement('main', null, [board, sidebar]);
+
+    return React.createElement('div', { className: 'container' }, [header, main]);
+}
+
+const mountNode = document.getElementById('root');
+if (ReactDOM.createRoot) {
+    ReactDOM.createRoot(mountNode).render(React.createElement(App));
+} else {
+    ReactDOM.render(React.createElement(App), mountNode);
+}
+
+window.addEventListener('error', (event) => {
+    const banner = document.createElement('div');
+    banner.className = 'runtime-error';
+    banner.textContent = 'Hata: ' + event.message;
+    document.body.prepend(banner);
+});
+</script>
+</body>
+</html>

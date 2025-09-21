@@ -1,11 +1,13 @@
 package com.chess.piece;
 
+import com.chess.board.Board;
 import com.chess.squares.Square;
 
 public abstract class AbstractPiece implements Movable {
     protected String name;
     protected PieceColor pieceColor;
     protected Square currentSquare;
+    protected boolean hasMoved;
 
     public AbstractPiece(PieceColor pieceColor) {
         this.pieceColor = pieceColor;
@@ -26,6 +28,38 @@ public abstract class AbstractPiece implements Movable {
 
     public void setCurrentSquare(Square currentSquare) {
         this.currentSquare = currentSquare;
+    }
+
+    public boolean hasMoved() {
+        return hasMoved;
+    }
+
+    protected AbstractPiece moveToSquare(Board board, Square destination) {
+        if (destination == null) {
+            throw new IllegalArgumentException("Destination square cannot be null");
+        }
+
+        Square source = this.currentSquare;
+        if (source != null) {
+            source.setCurrentPiece(null);
+            source.setOccupied(false);
+        }
+
+        AbstractPiece occupyingPiece = destination.getCurrentPiece();
+        if (occupyingPiece != null && occupyingPiece.getPieceColor() == this.pieceColor) {
+            throw new IllegalStateException("Cannot capture a friendly piece");
+        }
+
+        if (occupyingPiece != null) {
+            occupyingPiece.setCurrentSquare(null);
+        }
+
+        destination.setCurrentPiece(this);
+        destination.setOccupied(true);
+        this.currentSquare = destination;
+        this.hasMoved = true;
+
+        return occupyingPiece;
     }
 
     @Override

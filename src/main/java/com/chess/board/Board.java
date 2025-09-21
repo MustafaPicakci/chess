@@ -3,6 +3,7 @@ package com.chess.board;
 import com.chess.common.File;
 import com.chess.common.Location;
 import com.chess.piece.AbstractPiece;
+import com.chess.move.MoveRecord;
 import com.chess.piece.PieceColor;
 import com.chess.piece.PieceFactory;
 import com.chess.squares.Square;
@@ -20,6 +21,7 @@ public class Board {
 
     private final List<AbstractPiece> lightPieces = new ArrayList<>();
     private final List<AbstractPiece> darkPieces = new ArrayList<>();
+    private MoveRecord lastMove;
 
 
     public Board() {
@@ -65,6 +67,14 @@ public class Board {
 
     public List<AbstractPiece> getDarkPieces() {
         return this.darkPieces;
+    }
+
+    public MoveRecord getLastMove() {
+        return lastMove;
+    }
+
+    public void setLastMove(MoveRecord lastMove) {
+        this.lastMove = lastMove;
     }
 
     public void printBoard() {
