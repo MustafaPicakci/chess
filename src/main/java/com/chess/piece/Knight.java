@@ -3,6 +3,7 @@ package com.chess.piece;
 import com.chess.board.Board;
 import com.chess.common.Location;
 import com.chess.common.LocationFactory;
+import com.chess.move.MoveRecord;
 import com.chess.squares.Square;
 
 import java.util.ArrayList;
@@ -52,7 +53,11 @@ public class Knight extends AbstractPiece implements Movable {
     }
 
     @Override
-    public void makeMove(Square square) {
-        moveToSquare(square);
+    public MoveRecord makeMove(Board board, Square square) {
+        Location from = this.getCurrentSquare().getLocation();
+        AbstractPiece captured = moveToSquare(board, square);
+        return MoveRecord.builder(this, from, square.getLocation())
+                .capturedPiece(captured)
+                .build();
     }
 }

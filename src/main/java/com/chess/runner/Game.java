@@ -3,6 +3,7 @@ package com.chess.runner;
 import com.chess.board.Board;
 import com.chess.common.File;
 import com.chess.common.Location;
+import com.chess.move.MoveRecord;
 import com.chess.piece.*;
 import com.chess.squares.Square;
 
@@ -87,7 +88,13 @@ public class Game {
                 continue;
             }
 
-            movingPiece.makeMove(toSq);
+            MoveRecord moveRecord = movingPiece.makeMove(board, toSq);
+            board.setLastMove(moveRecord);
+            if (moveRecord.getPromotionPiece() != null) {
+                System.out.printf("%s terfi ederek %s oldu.%n",
+                        movingPiece.getClass().getSimpleName(),
+                        moveRecord.getPromotionPiece().getName());
+            }
             currentTurn = (currentTurn == PieceColor.LIGHT) ? PieceColor.DARK : PieceColor.LIGHT;
 
             board.printBoard();
